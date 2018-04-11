@@ -50,7 +50,17 @@ public class Geolocation extends CordovaPlugin {
             {
                 PluginResult r = new PluginResult(PluginResult.Status.OK);
                 context.sendPluginResult(r);
-                return true;
+
+                if(getMock()){
+                  Log.e("GPS-DATA", "Erro");
+                    //context.success("mock-true");
+                    PluginResult r = new PluginResult(PluginResult.Status.ERROR);
+                    context.sendPluginResult(r);
+                  return true;
+                }else{
+                  return false;
+                }
+
             }
             else {
                 PermissionHelper.requestPermissions(this, 0, permissions);
@@ -100,6 +110,70 @@ public class Geolocation extends CordovaPlugin {
     public void requestPermissions(int requestCode)
     {
         PermissionHelper.requestPermissions(this, requestCode, permissions);
+    }
+
+    private boolean getMock(){
+
+        LocationManager locationManager = (LocationManager) this.cordova.getActivity().getSystemService(Context.LOCATION_SERVICE);
+
+        // getting GPS status
+        isGPSEnabled = locationManager
+                .isProviderEnabled(LocationManager.GPS_PROVIDER);
+
+        // getting network status
+        isNetworkEnabled = locationManager
+                .isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+
+
+        if(!isGPSEnabled && !isNetworkEnabled) {
+            // no network provider is enabled
+            return true;
+        }else{
+            if(isGPSEnabled){
+                LOCATION_PROVIDER = LocationManager.GPS_PROVIDER;
+
+            }else if(isNetworkEnabled){
+                LOCATION_PROVIDER = LocationManager.NETWORK_PROVIDER;
+
+            }else{
+                return true;
+            }
+
+            // if (ContextCompat.checkSelfPermission(this.cordova.getActivity(),
+            //         Manifest.permission.ACCESS_FINE_LOCATION)
+            //         != PackageManager.PERMISSION_GRANTED) {
+            //     if (ActivityCompat.shouldShowRequestPermissionRationale(this.cordova.getActivity(),
+            //             Manifest.permission.ACCESS_FINE_LOCATION)) {
+            //     } else {
+            //         ActivityCompat.requestPermissions(this.cordova.getActivity(),
+            //                 new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+            //                 MY_PERMISSIONS_REQUEST);
+            //     }
+            // }
+
+
+            if(locationManager.getLastKnownLocation(LOCATION_PROVIDER) != null){
+                loc = locationManager.getLastKnownLocation(LOCATION_PROVIDER);
+
+                //Log.e("GPS-DATA", locationManager.getLastKnownLocation(LOCATION_PROVIDER).toString());
+                if(loc.getAccuracy() == 1 ||
+                        MockLocationDetector.checkForAllowMockLocationsApps(this.cordova.getActivity().getApplicationContext()) ||
+                        MockLocationDetector.isLocationFromMockProvider(this.cordova.getActivity().getApplicationContext(),loc)){
+                    return true;
+                }else{
+                    //Log.e("GPS-DATA","Accuracy = " + loc.getAccuracy());
+                    return false;
+                }
+
+            }else{
+                loc = locationManager.getLastKnownLocation(LOCATION_PROVIDER);
+                //Log.e("GPS-DATA", "KnowLocation NULL: " + loc);
+
+                return false;
+
+            }
+        }
+
     }
 
 

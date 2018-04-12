@@ -67,7 +67,7 @@ public class Geolocation extends CordovaPlugin {
                 if(getMock()){
                   Log.e("GPS-DATA", "Erro");
                     //context.success("mock-true");
-                    PluginResult r = new PluginResult(PluginResult.Status.ERROR);
+                    r = new PluginResult(PluginResult.Status.ERROR);
                     context.sendPluginResult(r);
                   return true;
                 }else{
